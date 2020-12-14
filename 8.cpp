@@ -5,44 +5,6 @@
 #include <queue>
 #include <iostream>
 using namespace std;
-typedef int tData;
-typedef struct sNode {
-	tData value;
-	tData nom;
-	struct sNode *next;
-} tNode;
-tNode* create_list(int N, int k, int **A, int i)
-{
-	tNode *p_begin = NULL;
-	tNode *p = NULL;
-	//заполним односвязный список
-	p_begin = (tNode *)malloc(sizeof(tNode));
-	p = p_begin;
-	p->next = NULL;
-	p->value = i + 1;
-	p->nom = i + 1;
-	for (int x = 0; x < N; x++) {
-		if (A[i][x] != 0) {
-			p->next = (tNode *)malloc(sizeof(tNode));
-			p = p->next;
-			//заполнить _новую_ структуру данных
-			p->next = NULL;
-			p->nom = x + 1;
-			p->value = A[i][x];
-		}
-	}
-	return p_begin;
-}
-
-void print_list(tNode *p_begin)
-{
-	tNode *p = p_begin;
-	while (p != NULL) {
-		printf("-> %d ", p->nom);
-		p = p->next;
-	}
-}
-tNode **p_begin;
 
 
 int BFS(int**A, int*M, int i, int N) {
@@ -62,6 +24,21 @@ int BFS(int**A, int*M, int i, int N) {
 		}
 	}
 	return 0;
+}
+void BFSIN(int**AI, int*M,  int i, int C, int N) {
+	int j;
+	
+		for (j = 0; j <C; j++) {
+			if (AI[i][j] != 0) {
+				for (int l = 0; l < N; l++) {
+					if ((AI[l][j] != 0)&&(M[l]== 1000)) {
+						M[l] = M[i] + AI[l][j];
+						BFSIN(AI, M,  l, C, N);
+					}
+				}
+			}
+		}
+	
 }
 
 int main(void)
@@ -108,9 +85,9 @@ int main(void)
 	for (i = 0; i < N; i++) {
 		BFS(A, M, i, N);
 		printf("\n");
-		/*for (int l = 0; l < N; l++) {
+		for (int l = 0; l < N; l++) {
 			printf("%d ", M[l]);
-		}*/
+		}
 		int k;
 		for (k = 0; k < N; k++) {
 			if ((EX[i] < M[k]) && (M[k]!=1000)) {
@@ -199,8 +176,77 @@ int main(void)
 		}
 		printf("\n");
 	}
-
 	
+	for (i = 0; i < N; i++) {
+		EX[i] = -1;
+	}
+	for (int l = 0; l < N; l++) {
+		M[l] = 1000;
+	}
+	printf("\n\nПоиск эксцентриситетов в матрице инцидентности:\n");
+	D = -1;
+	r = 10000;
+	for (i = 0; i < N; i++) {
+		M[i] = 0;
+			BFSIN(AI, M, i, C, N);
+			printf("\n");
+			for (int l = 0; l < N; l++) {
+			printf("%d ", M[l]);
+			}
+			int k;
+			for (k = 0; k < N; k++) {
+				if ((EX[i] < M[k]) && (M[k] != 1000)) {
+					EX[i] = M[k];
+				}
+			}
+			if ((EX[i] < r) && (EX[i] != 0)) {
+				r = EX[i];
+			}
+			if (EX[i] > D) {
+				D = EX[i];
+			}
+			printf("эксцентириситет вершины %d :  %d\n", i + 1, EX[i]);
+			for (int l = 0; l < N; l++) {
+				M[l] = 1000;
+			}
+	
+	}
+	printf("радиус графа :  %d\n", r);
+	printf("диаметр графа :  %d\n", D);
+	printf("центральные вершины: ");
+	for (int n = 0; n < N; n++) {
+		if (EX[n] == r) {
+			printf("  %d", n + 1);
+		}
+	}
+	printf("\nпериферийные вершины: ");
+	for (int n = 0; n < N; n++) {
+		if (EX[n] == D) {
+			printf("  %d", n + 1);
+		}
+	}
+	printf("\nизолированные вершины: ");
+	for (int n = 0; n < N; n++) {
+		if (EX[n] == 0) {
+			printf("  %d", n + 1);
+		}
+	}
+	for (i = 0; i < N; i++) {
+		int  step = 0;
+		for (j = 0; j < C; j++) {
+			if (AI[i][j] != 0) {
+				step++;
+			}
+		}
+		if (step == 1) {
+			printf("\nВершина %d концевая", i + 1);
+		}
+		if (step == C) {
+			printf("\nВершина %d доминирующая", i + 1);
+		}
+	}
+	
+
 	free(A);
 	free(AI);
 	free(M);
